@@ -13,7 +13,7 @@ const start = async()=>{
       setTimeout(start, 5000)
       return
     }
-    publisher = rabbitmq.createPublisher({ confirm: true, exchanges: [{ exchange: EXCHANGE_NAME, type: 'topic', durable: true, maxAttempts: 5 }]})
+    publisher = rabbitmq.createPublisher({ confirm: true, exchanges: [{ exchange: EXCHANGE_NAME, type: 'topic', maxAttempts: 5 }]})
     publisherReady = true
     publisher.on('basic.return', (msg)=>{
       log.info('basic.return')

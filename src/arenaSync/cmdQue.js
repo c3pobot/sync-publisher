@@ -8,7 +8,7 @@ QUE_NAME += `.sync.arena`
 const start = async()=>{
   if(!rabbitmq.ready) return
   let status = await rabbitmq.queueDelete(QUE_NAME)
-  publisher = rabbitmq.createPublisher({ confirm: true, queues: [{ queue: QUE_NAME, durable: true, arguments: { 'x-queue-type': 'quorum' } }]})
+  publisher = rabbitmq.createPublisher({ confirm: true, queues: [{ queue: QUE_NAME }]})
   log.info(`${POD_NAME} arena publisher started...`)
   publisherReady = true
   return true
