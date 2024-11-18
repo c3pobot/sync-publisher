@@ -1,5 +1,6 @@
 const log = require('logger')
 const rabbitmq = require('src/rabbitmq')
+const msgTTL = +process.env.RABBIT_MQ_TTL || 60
 
 let QUE_NAME = process.env.WORKER_QUE_NAME_SPACE || process.env.NAME_SPACE || 'default', POD_NAME = process.env.POD_NAME || 'sync-publisher', publisher, publisherReady
 QUE_NAME += `.sync.arena`
@@ -8,7 +9,7 @@ QUE_NAME += `.sync.arena`
 const start = async()=>{
   if(!rabbitmq.ready) return
   let status = await rabbitmq.queueDelete(QUE_NAME)
-  publisher = rabbitmq.createPublisher({ confirm: true, queues: [{ queue: QUE_NAME }]})
+  publisher = rabbitmq.createPublisher({ confirm: true, queues: [{ queue: QUE_NAME, durable: true, arguments: { 'x-queue-type': 'quorum', 'x-message-ttl': msgTTL * 1000 } }]})
   log.info(`${POD_NAME} arena publisher started...`)
   publisherReady = true
   return true

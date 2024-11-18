@@ -27,6 +27,9 @@ const syncShards = async()=>{
     if(!producerReady || !mongoReady) return
     let shards = await mongo.find('payoutServers', { status: 1 })
     if(shards?.length == 0) return
+    //await cmdQue.send({ name: 'shard', shardId: '337334829076971521-650381606208405544'})
+    //shardSet.add('337334829076971521-650381606208405544')
+    //return true
     for(let i in shards){
       if(shardSet.has(shards[i]._id)) continue
       let status = await cmdQue.send({ name: 'shard', shardId: shards[i]._id})
