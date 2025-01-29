@@ -2,7 +2,16 @@
 const log = require('logger')
 const mongo = require('mongoclient')
 const cmdQue = require('./cmdQue')
+const exchange = require('./exchange')
 let guildSet = new Set(), producerReady, mongoReady
+
+const checkQue = async()=>{
+  let status = await cmdQue.check()
+  if(status) return
+  log.info(`Player Que is empty recreating....`)
+  guildSet = new Set()
+  await exchange.send('restart')
+}
 
 const syncGuild = async()=>{
   try{
@@ -28,6 +37,7 @@ const sync = async()=>{
     if(!producerReady) producerReady = cmdQue.status()
     if(!mongoReady) mongoReady = mongo.status()
     if(!mongoReady || !producerReady) syncTime = 5
+    await checkQue()
     await syncGuild()
     setTimeout(sync, syncTime * 1000)
   }catch(e){

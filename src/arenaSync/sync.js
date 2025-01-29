@@ -2,7 +2,17 @@
 const log = require('logger')
 const mongo = require('mongoclient')
 const cmdQue = require('./cmdQue')
+const exchange = require('./exchange')
 let shardSet = new Set(), patreonSet = new Set(), producerReady, mongoReady
+
+const checkQue = async()=>{
+  let status = await cmdQue.check()
+  if(status) return
+  log.info(`Arena Que is empty recreating....`)
+  shardSet = new Set()
+  patreonSet = new Set()
+  await exchange.send('restart')
+}
 
 const syncPatreon = async()=>{
   try{
@@ -49,6 +59,7 @@ const sync = async()=>{
     if(!producerReady) producerReady = cmdQue.status()
     if(!mongoReady) mongoReady = mongo.status()
     if(!mongoReady || !producerReady) syncTime = 5
+    await checkQue()
     await syncShards()
     await syncPatreon()
     setTimeout(sync, syncTime * 1000)
