@@ -4,7 +4,7 @@ const rabbitmq = require('src/rabbitmq')
 let QUE_NAME = process.env.WORKER_QUE_NAME_SPACE || process.env.NAME_SPACE || 'default', POD_NAME = process.env.POD_NAME || 'sync-publisher', publisher, publisherReady
 QUE_NAME += `.sync.guild`
 
-let queProps = { queue: QUE_NAME }
+let queProps = { queue: QUE_NAME, arguments: { 'x-message-deduplication': true } }
 const start = async()=>{
   if(!rabbitmq.ready) return
   publisher = rabbitmq.createPublisher({ confirm: true, queues: [queProps]})
@@ -17,9 +17,16 @@ module.exports.status = ()=>{
   return publisherReady
 }
 module.exports.send = async(payload = {})=>{
-  if(!publisherReady) return
-  await publisher.send(QUE_NAME, payload )
-  return true
+  try{
+    if(!publisherReady) return
+    let obj = { routingKey: QUE_NAME, headers: { 'x-deduplication-header': payload.guildId } }
+    if(!obj.headers['x-deduplication-header']) return
+    await publisher.send(obj, payload )
+    return true
+  }catch(e){
+    if(e?.message?.includes('message rejected by server')) return
+    throw(e)
+  }
 }
 module.exports.check = async()=>{
   if(!publisherReady) return

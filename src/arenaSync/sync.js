@@ -2,7 +2,6 @@
 const log = require('logger')
 const mongo = require('mongoclient')
 const cmdQue = require('./cmdQue')
-const exchange = require('./exchange')
 let producerReady, mongoReady
 
 const checkQue = async()=>{
@@ -18,7 +17,7 @@ const syncPatreon = async()=>{
     let patreons = await mongo.find('patreon', {status: 1}, {_id: 1, status: 1})
     if(!patreons || patreons?.length == 0) return
     for(let i in patreons){
-      let status = await cmdQue.send({ name: 'arena', patreonId: patreons[i]._id})
+      let status = await cmdQue.send({ name: 'arena', patreonId: patreons[i]._id })
       if(status) log.debug(`Added ${patreons[i]._id} to patreon que...`)
     }
     return true
@@ -42,14 +41,13 @@ const syncShards = async()=>{
 }
 const sync = async()=>{
   try{
-    let syncTime = 5
+    let syncTime = 30
     if(!producerReady) producerReady = cmdQue.status()
     if(!mongoReady) mongoReady = mongo.status()
-    let status = await checkQue()
-    if(status){
-      await syncShards()
-      await syncPatreon()
-    }
+    if(!mongoReady || !producerReady) syncTime = 5
+    await checkQue()
+    await syncShards()
+    await syncPatreon()
     setTimeout(sync, syncTime * 1000)
   }catch(e){
     log.error(e)

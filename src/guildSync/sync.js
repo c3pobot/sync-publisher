@@ -2,7 +2,6 @@
 const log = require('logger')
 const mongo = require('mongoclient')
 const cmdQue = require('./cmdQue')
-const exchange = require('./exchange')
 let  producerReady, mongoReady
 
 const checkQue = async()=>{
@@ -28,11 +27,12 @@ const syncGuild = async()=>{
 }
 const sync = async()=>{
   try{
-    let syncTime = 5
+    let syncTime = 30
     if(!producerReady) producerReady = cmdQue.status()
     if(!mongoReady) mongoReady = mongo.status()
-    let status = await checkQue()
-    if(status) await syncGuild()
+    if(!mongoReady || !producerReady) syncTime = 5
+    await checkQue()
+    await syncGuild()
     setTimeout(sync, syncTime * 1000)
   }catch(e){
     log.error(e)
