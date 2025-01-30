@@ -22,7 +22,6 @@ const startCheck = ()=>{
 const startCmdQue = async()=>{
   try{
     let status = await cmdQue.start()
-    if(status) status = await exchange.send('restart')
     if(status){
       sync()
       return

@@ -3,14 +3,13 @@ const log = require('logger')
 const mongo = require('mongoclient')
 const cmdQue = require('./cmdQue')
 const exchange = require('./exchange')
-let guildSet = new Set(), producerReady, mongoReady
+let  producerReady, mongoReady
 
 const checkQue = async()=>{
   let status = await cmdQue.check()
   if(status) return
-  log.info(`Guild Que is empty recreating....`)
-  guildSet = new Set()
-  await exchange.send('restart')
+  log.debug(`Guild Que is empty recreating....`)
+  return true
 }
 
 const syncGuild = async()=>{
@@ -19,12 +18,8 @@ const syncGuild = async()=>{
     let guilds = await mongo.find('guilds', { 'auto.guildId': { $exists: true } }, { auto: 1 })
     for(let i in guilds){
       if(!guilds[i]?.auto || !guilds[i]?.auto?.guildId) continue
-      if(guildSet.has(guilds[i].auto.guildId)) continue
       let status = await cmdQue.send({ name: 'message', guildId: guilds[i].auto.guildId })
-      if(status){
-        guildSet.add(guilds[i].auto.guildId)
-        log.debug(`Added ${guilds[i].auto.guildId} to guild que...`)
-      }
+      if(status) log.debug(`Added ${guilds[i].auto.guildId} to guild que...`)
     }
     return true
   }catch(e){
@@ -33,12 +28,11 @@ const syncGuild = async()=>{
 }
 const sync = async()=>{
   try{
-    let syncTime = 30
+    let syncTime = 5
     if(!producerReady) producerReady = cmdQue.status()
     if(!mongoReady) mongoReady = mongo.status()
-    if(!mongoReady || !producerReady) syncTime = 5
-    await checkQue()
-    await syncGuild()
+    let status = await checkQue()
+    if(status) await syncGuild()
     setTimeout(sync, syncTime * 1000)
   }catch(e){
     log.error(e)

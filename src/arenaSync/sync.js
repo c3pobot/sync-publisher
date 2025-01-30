@@ -43,6 +43,8 @@ const syncShards = async()=>{
 const sync = async()=>{
   try{
     let syncTime = 5
+    if(!producerReady) producerReady = cmdQue.status()
+    if(!mongoReady) mongoReady = mongo.status()
     let status = await checkQue()
     if(status){
       await syncShards()

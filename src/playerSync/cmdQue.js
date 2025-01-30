@@ -8,7 +8,6 @@ let queProps = { queue: QUE_NAME }
 
 const start = async()=>{
   if(!rabbitmq.ready) return
-  let status = await rabbitmq.queueDelete(QUE_NAME)
   publisher = rabbitmq.createPublisher({ confirm: true, queues: [queProps]})
   log.info(`${POD_NAME} arena publisher started...`)
   publisherReady = true
