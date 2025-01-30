@@ -27,10 +27,9 @@ const syncGuild = async()=>{
 }
 const sync = async()=>{
   try{
-    let syncTime = 30
+    let syncTime = 5
     if(!producerReady) producerReady = cmdQue.status()
     if(!mongoReady) mongoReady = mongo.status()
-    if(!mongoReady || !producerReady) syncTime = 5
     await checkQue()
     await syncGuild()
     setTimeout(sync, syncTime * 1000)
