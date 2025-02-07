@@ -16,6 +16,7 @@ log.info(`${POD_NAME} queue publisher created...`)
 let publisher = client.createPublisher({ exchanges: exchanges, queues: queues })
 publisher.on('close', ()=>{
   log.info(`${POD_NAME} topic exchange publisher disconnected...`)
+  log.info(`${POD_NAME} queue publisher disconnected...`)
 })
 module.exports = {
   get status(){
