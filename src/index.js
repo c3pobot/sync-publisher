@@ -4,7 +4,7 @@ const mongo = require('mongoclient')
 const rabbitmq = require('./rabbitmq')
 const arenaSync = require('./arenaSync')
 const guildSync = require('./guildSync')
-const reportError = require('./reportError')
+require('./exchange')
 
 const CheckMongo = ()=>{
   try{
@@ -16,7 +16,7 @@ const CheckMongo = ()=>{
     }
     setTimeout(CheckMongo, 5000)
   }catch(e){
-    reportError(e)
+    log.error(e)
     setTimeout(CheckMongo, 5000)
   }
 }
@@ -25,14 +25,13 @@ const CheckRabbitMQ = ()=>{
     if(!rabbitmq?.status) log.debug(`rabbitmq is not ready...`)
     if(rabbitmq?.status){
       log.debug(`rabbitmq is ready...`)
-      rabbitmq.start()
       arenaSync.start()
       guildSync.start()
       return
     }
     setTimeout(CheckRabbitMQ, 5000)
   }catch(e){
-    reportError(e)
+    log.error(e)
     setTimeout(CheckRabbitMQ, 5000)
   }
 }

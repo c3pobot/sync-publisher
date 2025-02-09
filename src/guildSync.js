@@ -2,7 +2,6 @@
 const log = require('logger')
 const mongo = require('mongoclient')
 const rabbitmq = require('./rabbitmq')
-const reportError = require('./reportError')
 
 const syncGuild = async()=>{
   try{
@@ -15,7 +14,7 @@ const syncGuild = async()=>{
     }
     return true
   }catch(e){
-    reportError(e)
+    log.error(e)
   }
 }
 const sync = async()=>{
@@ -27,7 +26,7 @@ const sync = async()=>{
     }
     setTimeout(sync, syncTime * 1000)
   }catch(e){
-    reportError(e)
+    log.error(e)
     setTimeout(sync, 5)
   }
 }

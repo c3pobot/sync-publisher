@@ -2,7 +2,6 @@
 const log = require('logger')
 const mongo = require('mongoclient')
 const rabbitmq = require('./rabbitmq')
-const reportError = require('./reportError')
 
 const syncPatreon = async()=>{
   try{
@@ -14,7 +13,7 @@ const syncPatreon = async()=>{
     }
     return true
   }catch(e){
-    reportError(e)
+    log.error(e)
   }
 }
 const syncShards = async()=>{
@@ -27,7 +26,7 @@ const syncShards = async()=>{
     }
     return true
   }catch(e){
-    reportError(e)
+    log.error(e)
   }
 }
 const sync = async()=>{
@@ -40,7 +39,7 @@ const sync = async()=>{
     }
     setTimeout(sync, syncTime * 1000)
   }catch(e){
-    reportError(e)
+    log.error(e)
     setTimeout(sync, 5)
   }
 }

@@ -1,7 +1,6 @@
 'use strict'
 const log = require('logger')
-const client = require('./client')
-const reportError = require('src/reportError')
+const client = require('../rabbitmq/client')
 
 const exchangeProcessor = require('./exchangeProcessor')
 
@@ -16,7 +15,7 @@ const processCmd = async(msg = {})=>{
     if(!msg.body) return
     return await exchangeProcessor({...msg.body,...{ routingKey: msg.routingKey, exchange: msg.exchange, timestamp: msg.timestamp }})
   }catch(e){
-    reportError(e)
+    log.error(e)
   }
 }
 let consumer = client.createConsumer({
@@ -29,7 +28,7 @@ let consumer = client.createConsumer({
 }, processCmd)
 
 consumer.on('error', (err)=>{
-  reportError(err)
+  log.error(err)
 })
 consumer.on('ready', ()=>{
   log.info(`${POD_NAME} topic consumer created...`)
@@ -39,7 +38,7 @@ const stopConsumer = async()=>{
   try{
     await consumer.close()
   }catch(e){
-    reportError(e)
+    log.error(e)
   }
 }
 const startConsumer = async()=>{
@@ -50,7 +49,7 @@ const startConsumer = async()=>{
     await consumer.start()
     return true
   }catch(e){
-    reportError(e)
+    log.error(e)
   }
 }
 const watch = async() =>{
@@ -70,14 +69,8 @@ const watch = async() =>{
     }
     setTimeout(watch, 5000)
   }catch(e){
-    reportError(e)
+    log.error(e)
     setTimeout(watch, 5000)
   }
 }
-module.exports.start = () =>{
-  try{
-    watch()
-  }catch(e){
-    reportError(e)
-  }
-}
+watch()

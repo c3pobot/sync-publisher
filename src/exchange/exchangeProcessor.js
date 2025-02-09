@@ -1,6 +1,5 @@
 'use strict'
 const log = require('logger')
-const reportError = require('src/reportError')
 const Cmds = {}
 Cmds['setLogLevel'] = (data = {})=>{
   try{
@@ -10,7 +9,7 @@ Cmds['setLogLevel'] = (data = {})=>{
       log.setLevel('info');
     }
   }catch(e){
-    reportError(e)
+    log.error(e)
   }
 }
 module.exports = (data)=>{
@@ -19,6 +18,6 @@ module.exports = (data)=>{
     if(Cmds[data?.routingKey]) Cmds[data.routingKey](data)
     if(Cmds[data?.cmd]) Cmds[data.cmd](data)
   }catch(e){
-    reportError(e)
+    log.error(e)
   }
 }
