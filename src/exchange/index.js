@@ -5,7 +5,7 @@ const client = require('../rabbitmq/client')
 const exchangeProcessor = require('./exchangeProcessor')
 
 let POD_NAME = process.env.POD_NAME || 'worker'
-let QUE_NAME = `topic.${POD_NAME}`, consumerStatus = false, NAME_SPACE = process.env.NAME_SPACE || 'default'
+let QUE_NAME = `xtopic.${POD_NAME}`, consumerStatus = false, NAME_SPACE = process.env.NAME_SPACE || 'default'
 
 let exchanges = [{ exchange: `${NAME_SPACE}.cmds`, type: 'topic' }]
 let queueBindings = [{ exchange: `${NAME_SPACE}.cmds`, queue: QUE_NAME }]
@@ -24,7 +24,7 @@ let consumer = client.createConsumer({
   lazy: true,
   exchanges: exchanges,
   queueBindings: queueBindings,
-  queueOptions: { queue: QUE_NAME, durable: false, exclusive: true, arguments: { 'x-message-ttl': 6000 } }
+  queueOptions: { queue: QUE_NAME, durable: false, exclusive: true, arguments: { 'x-message-ttl': 60000 } }
 }, processCmd)
 
 consumer.on('error', (err)=>{

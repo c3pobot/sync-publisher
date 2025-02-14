@@ -8,6 +8,7 @@ Cmds['setLogLevel'] = (data = {})=>{
     }else{
       log.setLevel('info');
     }
+    log.info(`Set log level to ${log.Level}...`)
   }catch(e){
     log.error(e)
   }
