@@ -4,8 +4,9 @@ const mongo = require('mongoclient')
 const rabbitmq = require('./rabbitmq')
 const arenaSync = require('./arenaSync')
 const guildSync = require('./guildSync')
+const subSync = require('./subSync')
 require('./exchange')
-
+require('./premiumSync')
 const CheckMongo = ()=>{
   try{
     log.debug(`start up mongo check...`)
@@ -27,6 +28,7 @@ const CheckRabbitMQ = ()=>{
       log.debug(`rabbitmq is ready...`)
       arenaSync.start()
       guildSync.start()
+      subSync.start()
       return
     }
     setTimeout(CheckRabbitMQ, 5000)

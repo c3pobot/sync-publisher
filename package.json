@@ -2,6 +2,7 @@
   "dependencies": {
     "logger": "github:c3pobot/logger",
     "mongoclient": "github:c3pobot/mongoclient",
+    "node-fetch": "^2.6.7",
     "rabbitmq-client": "^5.0.2"
   },
   "name": "sync-publisher",

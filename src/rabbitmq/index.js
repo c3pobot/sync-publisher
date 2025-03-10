@@ -5,7 +5,7 @@ const client = require('./client')
 let POD_NAME = process.env.POD_NAME || 'sync-publisher', NAME_SPACE = process.env.NAME_SPACE || 'default'
 let DEFAULT_EXCHANGE = `${NAME_SPACE}.cmds`
 
-let queues = [{ queue: 'sync.arena', arguments: { 'x-message-deduplication': true } }, { queue: 'sync.guild', arguments: { 'x-message-deduplication': true } }]
+let queues = [{ queue: 'sync.arena', arguments: { 'x-message-deduplication': true } }, { queue: 'sync.guild', arguments: { 'x-message-deduplication': true } }, { queue: 'sync.player', arguments: { 'x-message-deduplication': true } }]
 let exchanges = [{ exchange: DEFAULT_EXCHANGE, type: 'topic', maxAttempts: 5 }]
 
 log.info(`${POD_NAME} topic exchange publisher created...`)
