@@ -41,20 +41,29 @@ const checkServer = async(svr = {})=>{
   if(!members || members?.length == 0) return
   let vip = [], guild = [], shard = [], arena = []
   for(let i in members){
-    if(svr.vipRole && members[i].roles?.includes(svr.vipRole)){
-      vip.push(members[i].id)
-      arena.push(members[i].id)
-    }
-    if(svr.guildRole && memebrs[i].roles?.includes(svr.guildRole)){
-      vip.push(members[i].id)
+    if(svr.guildRole && members[i].roles?.includes(svr.guildRole)){
+      if(!vip.includes(members[i].id)) vip.push(members[i].id)
       guild.push(members[i].id)
     }
-    if(svr.shardRole && memebrs[i].roles?.includes(svr.shardRole)){
-      vip.push(members[i].id)
+    if(svr.shardRole && members[i].roles?.includes(svr.shardRole)){
+      if(!vip.includes(members[i].id)) vip.push(members[i].id)
       shard.push(members[i].id)
     }
   }
+  for(let i in members){
+    if(svr.vipRole && members[i].roles?.includes(svr.vipRole)){
+      if(!vip.includes(members[i].id)) vip.push(members[i].id)
+      if(!guild.includes(members[i].id) && !shard.includes(members[i].id)) arena.push(members[i].id)
+    }
+  }
   await mongo.set('serverSubscriptions', { _id: svr.id }, { vip: vip, guild: guild, shard: shard, arena: arena })
+  let patreons = await mongo.find('patreon', {}, { _id: 1, status: 1, subscriber: 1 })
+  if(!patreons || patreons?.length == 0) return
+  for(let i in patreons){
+    if(!patreons[i].subscriber) continue
+    if(guild.includes(patreons[i]._id) && !patreons[i].status) await mongo.set('patreon', { _id: patreons[i]._id }, { status: 1 })
+    if(!guild.includes(patreons[i]._id) && patreons[i].status) await mongo.set('patreon', { _id: patreons[i]._id }, { status: 0 })
+  }
 }
 const getMembers = async(sId)=>{
   let res = [], nextMembers = false, lastMember
