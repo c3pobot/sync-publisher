@@ -1,5 +1,5 @@
-'use strict'
-const log = require('logger')
+import log from '../logger.js'
+
 const Cmds = {}
 Cmds['setLogLevel'] = (data = {})=>{
   try{
@@ -13,7 +13,7 @@ Cmds['setLogLevel'] = (data = {})=>{
     log.error(e)
   }
 }
-module.exports = (data)=>{
+export default function(data){
   try{
     if(!data) return
     if(Cmds[data?.routingKey]) Cmds[data.routingKey](data)

@@ -1,11 +1,10 @@
-'use strict'
-const log = require('logger')
-const mongo = require('mongoclient')
-const rabbitmq = require('./rabbitmq')
+import log from './logger.js'
+import { swgohCache } from './cache.js'
+import rabbitmq from './rabbitmq/index.js'
 
-const syncGuild = async()=>{
+async function syncGuild(){
   try{
-    let guilds = await mongo.find('guilds', { 'auto.guildId': { $exists: true } }, { auto: 1 })
+    let guilds = await swgohCache.all('guilds', {}, { auto: { guildId: 1 } })
     if(!guilds || guilds?.length == 0) return
     for(let i in guilds){
       if(!guilds[i]?.auto || !guilds[i]?.auto?.guildId) continue
@@ -17,7 +16,7 @@ const syncGuild = async()=>{
     log.error(e)
   }
 }
-const sync = async()=>{
+async function sync(){
   try{
     let syncTime = 5
     if(rabbitmq?.status){
@@ -30,4 +29,4 @@ const sync = async()=>{
     setTimeout(sync, 5)
   }
 }
-module.exports.start = sync
+export default { start: sync }

@@ -1,40 +1,33 @@
-'use strict'
-const log = require('logger')
-const mongo = require('mongoclient')
-const rabbitmq = require('./rabbitmq')
-const arenaSync = require('./arenaSync')
-const guildSync = require('./guildSync')
-const subSync = require('./subSync')
-require('./exchange')
-require('./premiumSync')
-const CheckMongo = ()=>{
+import log from './logger.js'
+import cache from './cache.js'
+import rabbitmq from './rabbitmq/index.js'
+import arenaSync from './arena_sync.js'
+import guildSync from './guild_sync.js'
+import subSync from './sub_sync.js'
+import './exchange/index.js'
+import './premium_sync/index.js'
+
+function checkMongo(){
   try{
-    log.debug(`start up mongo check...`)
-    let status = mongo.status()
-    if(status){
-      CheckRabbitMQ()
-      return
-    }
-    setTimeout(CheckMongo, 5000)
+    if(cache.status()) return checkRabbitMQ()
+    setTimeout(checkMongo, 5000)
   }catch(e){
     log.error(e)
-    setTimeout(CheckMongo, 5000)
+    setTimeout(checkMongo, 5000)
   }
 }
-const CheckRabbitMQ = ()=>{
+function checkRabbitMQ(){
   try{
-    if(!rabbitmq?.status) log.debug(`rabbitmq is not ready...`)
-    if(rabbitmq?.status){
-      log.debug(`rabbitmq is ready...`)
+    if(rabbitmq?.status()){
       arenaSync.start()
       guildSync.start()
       subSync.start()
-      return
+      return log.debug(`rabbitmq is ready...`)
     }
-    setTimeout(CheckRabbitMQ, 5000)
+    setTimeout(checkRabbitMQ, 5000)
   }catch(e){
     log.error(e)
-    setTimeout(CheckRabbitMQ, 5000)
+    setTimeout(checkRabbitMQ, 5000)
   }
 }
-CheckMongo()
+checkMongo()

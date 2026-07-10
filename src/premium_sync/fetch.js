@@ -1,7 +1,6 @@
-'use strict'
-const log = require('logger')
-const fetch = require('node-fetch')
-const parseResponse = async(res)=>{
+import log from '../logger.js'
+
+async function parseResponse( res ){
   try{
     if(!res) return
     if (res?.status?.toString().startsWith('5')) {
@@ -24,10 +23,20 @@ const parseResponse = async(res)=>{
     throw(e);
   }
 }
-module.exports = async(uri, opts = {})=>{
+async function fetchRequest(uri, opts){
   try{
+    opts.signal = AbortSignal.timeout(10000)
     let res = await fetch(uri, opts)
-    res = await parseResponse(res)
+    return await parseResponse(res)
+  }catch(e){
+    if(e?.name) return { error: e.name, message: e.message }
+    if(e?.status) return await parseResponse(e)
+    throw(e)
+  }
+}
+export default async function( uri, opts ){
+  try{
+    let res = await fetchRequest(uri, opts)
     return res?.body
   }catch(e){
     log.error(e)

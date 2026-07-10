@@ -1,6 +1,5 @@
-'use strict'
-const log = require('logger')
-const client = require('./client')
+import log from '../logger.js'
+import client from './client.js'
 
 let POD_NAME = process.env.POD_NAME || 'sync-publisher', NAME_SPACE = process.env.NAME_SPACE || 'default'
 let DEFAULT_EXCHANGE = `${NAME_SPACE}.cmds`
@@ -16,12 +15,12 @@ publisher.on('close', ()=>{
   log.info(`${POD_NAME} topic exchange publisher disconnected...`)
   log.info(`${POD_NAME} queue publisher disconnected...`)
 })
-module.exports = {
-  get status(){
-    return client?.ready
-  }
+
+function status(){
+  return client.ready
 }
-module.exports.add = async(queName, payload)=>{
+
+async function add(queName, payload){
   try{
     if(!queName || !payload || !payload?.id || !client.ready) return
     await publisher.send ({ routingKey: queName, headers: { 'x-deduplication-header': payload.id } }, payload)
@@ -31,7 +30,7 @@ module.exports.add = async(queName, payload)=>{
     log.error(e)
   }
 }
-module.exports.check = async(queName)=>{
+async function check(queName){
   try{
     if(!client.ready) return
     let queProps = queues.find(x=>x.queue === queName)
@@ -41,7 +40,7 @@ module.exports.check = async(queName)=>{
     log.error(e)
   }
 }
-module.exports.notify = async( data, routingKey, exchange )=>{
+async function notify( data, routingKey, exchange ){
   try{
     if(!data || !client.ready) return
     if(!exchange) exchange = DEFAULT_EXCHANGE
@@ -51,3 +50,4 @@ module.exports.notify = async( data, routingKey, exchange )=>{
     log.error(e)
   }
 }
+export default { add, check, notify, status }

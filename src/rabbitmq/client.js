@@ -1,6 +1,5 @@
-'use strict'
-const log = require('logger');
-const rabbitmq = require('rabbitmq-client');
+import log from '../logger.js'
+import rabbitmq from 'rabbitmq-client'
 
 const POD_NAME = process.env.POD_NAME || 'sync-publisher'
 const connectOptions = {
@@ -18,4 +17,4 @@ client.on('connection', ()=>{
   log.info(`${POD_NAME} rabbitmq client connected...`)
 })
 
-module.exports = client
+export default client

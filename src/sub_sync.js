@@ -1,12 +1,11 @@
-'use strict'
-const log = require('logger')
-const mongo = require('mongoclient')
-const rabbitmq = require('./rabbitmq')
+import log from './logger.js'
+import { swgohCache } from './cache.js'
+import rabbitmq from './rabbitmq/index.js'
 
-const getPrimaryAllyCode = async(discordId)=>{
+async function getPrimaryAllyCode(discordId){
   try{
     if(!discordId) return
-    let dObj = (await mongo.find('discordId', { _id: discordId }, { allyCodes: 1 }))[0]
+    let dObj = await swgohCache.get('discordId', { _id: discordId }, { allyCodes: 1 })
     if(!dObj?.allyCodes || dObj.allyCodes?.length == 0) return
     let pAllyCode = dObj.allyCodes?.find(x=>x.opt == 'primary')
     if(pAllyCode) return pAllyCode.allyCode
@@ -15,23 +14,11 @@ const getPrimaryAllyCode = async(discordId)=>{
     log.error(e)
   }
 }
-const syncSubs = async()=>{
-  try{
-    let subs = await mongo.find('serverSubscriptions', {}, { id: 1, arena: 1, vip: 1 })
-    if(!subs || subs?.length == 0) return
 
-    for(let i in subs){
-      await getArenaSubAllyCodes(subs[i])
-      await getVIPAllyCodes(subs[i])
-    }
-  }catch(e){
-    log.error(e)
-  }
-}
-const getArenaSubAllyCodes = async(svr = {})=>{
+async function getArenaSubAllyCodes(svr = {}){
   try{
     if(!svr.arena || svr.arena?.length == 0) return
-    let botSettings = (await mongo.find('botSettings', { _id: '1' }, { botSID: 1, arenaLogChId: 1 }))[0]
+    let botSettings = await swgohCache.get('botSettings', { _id: '1' }, { botSID: 1, arenaLogChId: 1 })
     for(let i in svr.arena){
       let allyCode = await getPrimaryAllyCode(svr.arena[i])
 
@@ -43,7 +30,7 @@ const getArenaSubAllyCodes = async(svr = {})=>{
     log.error(e)
   }
 }
-const getVIPAllyCodes = async(svr = {})=>{
+async function getVIPAllyCodes(svr = {}){
   try{
     if(!svr.vip || svr.vip?.length == 0) return
     for(let i in svr.vip){
@@ -56,7 +43,21 @@ const getVIPAllyCodes = async(svr = {})=>{
     log.error(e)
   }
 }
-const sync = async()=>{
+
+async function syncSubs(){
+  try{
+    let subs = await swgohCache.all('serverSubscriptions', {}, { id: 1, arena: 1, vip: 1 })
+    if(!subs || subs?.length == 0) return
+
+    for(let i in subs){
+      await getArenaSubAllyCodes(subs[i])
+      await getVIPAllyCodes(subs[i])
+    }
+  }catch(e){
+    log.error(e)
+  }
+}
+async function sync(){
   try{
     let syncTime = 5
     if(rabbitmq?.status){
@@ -69,4 +70,4 @@ const sync = async()=>{
     setTimeout(sync, 5)
   }
 }
-module.exports.start = sync
+export default { start: sync }

@@ -1,13 +1,12 @@
 {
   "dependencies": {
-    "logger": "github:c3pobot/logger",
-    "mongoclient": "github:c3pobot/mongoclient",
-    "node-fetch": "^2.6.7",
+    "mongo-cache": "github:c3pobot/mongo-cache",
     "rabbitmq-client": "^5.0.2"
   },
   "name": "sync-publisher",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "update": "chmod a+x updategitdependency.sh && ./updategitdependency.sh",

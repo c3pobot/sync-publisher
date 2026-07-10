@@ -1,8 +1,6 @@
-'use strict'
-const log = require('logger')
-const client = require('../rabbitmq/client')
-
-const exchangeProcessor = require('./exchangeProcessor')
+import log from '../logger.js'
+import client from '../rabbitmq/client.js'
+import exchangeProcessor from './exchange_processor.js'
 
 let POD_NAME = process.env.POD_NAME || 'worker'
 let QUE_NAME = `xtopic.${POD_NAME}`, consumerStatus = false, NAME_SPACE = process.env.NAME_SPACE || 'default'
@@ -36,43 +34,14 @@ consumer.on('ready', ()=>{
   log.info(`${POD_NAME} topic consumer created...`)
 })
 
-const stopConsumer = async()=>{
+async function init(){
   try{
-    await consumer.close()
-  }catch(e){
-    log.error(e)
-  }
-}
-const startConsumer = async()=>{
-  try{
-    await stopConsumer()
-    let status = client.ready
-    if(!status) return
+    if(!client.ready) setTimeout(init, 5000)
     await consumer.start()
-    return true
+    log.info(`exchange consumer started...`)
   }catch(e){
     log.error(e)
+    setTimeout(init, 5000)
   }
 }
-const watch = async() =>{
-  try{
-    if(client.ready){
-      if(!consumerStatus){
-        consumerStatus = await startConsumer()
-        if(consumerStatus){
-          log.info(`${POD_NAME} topic consumer started...`)
-        }
-      }
-    }else{
-      if(consumerStatus){
-        consumerStatus = await stopConsumer()
-        if(!consumerStatus) log.info(`${POD_NAME} topic consumer stopped...`)
-      }
-    }
-    setTimeout(watch, 5000)
-  }catch(e){
-    log.error(e)
-    setTimeout(watch, 5000)
-  }
-}
-watch()
+init()
