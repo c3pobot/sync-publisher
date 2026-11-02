@@ -21,7 +21,7 @@ async function syncShards(){
     let shards = await arenaCache.all('payoutServers', {})
     if(!shards || shards?.length == 0) return
     for(let i in shards){
-      if(!shards[i].status) continue
+      if(!shards[i].status || shards[i].type == 'char') continue
       let status = await rabbitmq.add('sync.arena', { id: shards[i]._id, name: 'shard', shardId: shards[i]._id})
       if(!status) log.debug(`Error adding ${shards[i]._id} to shard que...`)
     }
